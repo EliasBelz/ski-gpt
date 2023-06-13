@@ -82,19 +82,18 @@ llm = ChatOpenAI(
 
 # conversational memory
 conversational_memory = ConversationBufferWindowMemory(
-    memory_key='chat_history',
     k=5,
     return_messages=True
 )
 
-prompt_template = """Use the following pieces of context to answer the question at the end.
+prompt_template = """You are a ski shop employee, use the following product information to answer the question at the end.
                      If you don't know the answer, just say that you don't know or ask for more details, don't try to make up an answer.
-                     Include the url of any product meantioned.
+                     Include the URL of any products mentioned.
 
                     {context}
 
                     Question: {question}
-                    Answer like a ski shop employee include the URL link of any products:"""
+                    Answer:"""
 
 PROMPT = PromptTemplate(
     template=prompt_template, input_variables=["context", "question"]
@@ -175,4 +174,3 @@ if st.session_state['generated']:
     for i in range(len(st.session_state['generated'])-1, -1, -1):
         message(st.session_state['past'][i], is_user=True,avatar_style="adventurer",seed=user_av, key=str(i) + '_user')
         message(st.session_state["generated"][i],seed=bott_av , key=str(i))
-
