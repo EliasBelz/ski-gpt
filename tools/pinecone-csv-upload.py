@@ -18,10 +18,9 @@ loader = CSVLoader(file_path='output.csv')
 data = loader.load()
 embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
 
-
 index_name="shred-data"
-print(data)
 Pinecone.from_documents(data , embeddings, index_name=index_name)
+print(data)
 
 
 
