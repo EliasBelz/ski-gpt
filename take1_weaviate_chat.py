@@ -1,5 +1,7 @@
 import weaviate
 import streamlit as st
+import os
+
 
 client = weaviate.Client(
     url="https://ski-cluster-ndwzp6pd.weaviate.network",
