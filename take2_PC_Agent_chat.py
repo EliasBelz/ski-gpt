@@ -3,6 +3,8 @@ import streamlit as st
 from streamlit_chat import message
 import pinecone
 import random
+import os
+from dotenv import load_dotenv
 
 
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -14,10 +16,15 @@ from langchain.agents import initialize_agent
 from langchain.vectorstores import Pinecone
 from langchain.prompts import PromptTemplate
 
-OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
-PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
+load_dotenv()
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')  # Replace with your api key
+PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
 PINECONE_API_ENV = "us-west4-gcp-free"
 model_name = 'text-embedding-ada-002'
+
+if(not (OPENAI_API_KEY and PINECONE_API_ENV)):
+    OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
+    PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
 
 # initialize pinecone
 pinecone.init(

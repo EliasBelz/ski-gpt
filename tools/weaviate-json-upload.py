@@ -1,9 +1,13 @@
 import weaviate
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 client = weaviate.Client(
     url="https://ski-cluster-9u6a794j.weaviate.network",
     additional_headers = {
-        "X-OpenAI-Api-Key": "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"  # Replace with your inference API key
+        "X-OpenAI-Api-Key": os.getenv('OPENAI_API_KEY')  # Replace with your inference API key
     }  # Replace with your endpoint
 )
 
