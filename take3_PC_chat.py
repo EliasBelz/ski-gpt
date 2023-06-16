@@ -11,7 +11,7 @@ from langchain.chains import RetrievalQA
 from langchain.vectorstores import Pinecone
 from langchain.prompts import PromptTemplate
 
-OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
+OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"] # Replace with your api key
 PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
 PINECONE_API_ENV = "us-west4-gcp-free"
 model_name = 'text-embedding-ada-002'
@@ -44,7 +44,7 @@ def randomize_array(arr):
 
 st.set_page_config(page_title="Ski-GPT", page_icon="🎿", layout="wide")
 
-st.header("Ski-GPT is like chatGPT for personalized gear recomendations!\n")
+st.header("🎿Ski-GPT is like chatGPT for personalized ski and snowboard recomendations!\n")
 
 # Define the name of the index and the dimensionality of the embeddings
 index_name = "shred-data"
@@ -102,7 +102,7 @@ with st.sidebar:
     st.markdown("# About 🙌")
     st.markdown("Ski-GPT is your personal shred curator! 🤟")
     st.markdown("With knowledge of 400 skis and snowboards from evo.com, Ski-GPT will find the right gear for you!")
-    st.markdown("Unlike chatGPT, Ski-GPT will only answer using injected knowlege from evo.com")
+    st.markdown("Unlike chatGPT, Ski-GPT will only answer using injected knowlege from evo.com.")
     st.markdown("---")
     st.markdown("A side project by Elias Belzberg")
     st.markdown("ebelz@cs.washington.edu")

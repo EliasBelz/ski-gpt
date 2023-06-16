@@ -1,5 +1,4 @@
 import weaviate
-import json
 
 client = weaviate.Client(
     url="https://ski-cluster-9u6a794j.weaviate.network",
