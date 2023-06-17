@@ -120,6 +120,10 @@ with st.sidebar:
                 "- Langchain python library\n"
                 "- Streamlit")
     st.markdown("---")
+    st.markdown("---")
+    st.markdown("Code available here!\n"
+                "[github.com/EliasBelz/ski-gpt](https://github.com/EliasBelz/ski-gpt)")
+    st.markdown("---")
 
 # Storing the chat
 if 'generated' not in st.session_state:
