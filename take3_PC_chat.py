@@ -136,7 +136,7 @@ def clear_text():
 
 # We will get the user's input by calling the get_text function
 def get_text():
-    input_text = st.text_input("Input a question here! For example: \"What are the best Skis for powder?\",\
+    input_text = st.text_input("Input a question here! For example: \"What are the best Skis for powder?\", \
                                 \"Compare Libtech and K2 snowboards.\"", placeholder="Enter prompt: ", key="input")
     return input_text
 
