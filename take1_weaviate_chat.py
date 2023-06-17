@@ -1,12 +1,13 @@
 import weaviate
-import streamlit as st
 import os
+from dotenv import load_dotenv
 
-
+load_dotenv()
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 client = weaviate.Client(
     url="https://ski-cluster-ndwzp6pd.weaviate.network",
     additional_headers={
-        "X-OpenAI-Api-Key": st.secrets["OPENAI_API_KEY"]  # Replace with your inference API key
+        "X-OpenAI-Api-Key": OPENAI_API_KEY  # Replace with your inference API key
     }
 )
 
