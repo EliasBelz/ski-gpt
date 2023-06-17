@@ -120,7 +120,6 @@ with st.sidebar:
                 "- Langchain python library\n"
                 "- Streamlit")
     st.markdown("---")
-    st.markdown("---")
     st.markdown("Code available here!\n"
                 "[github.com/EliasBelz/ski-gpt](https://github.com/EliasBelz/ski-gpt)")
     st.markdown("---")
@@ -137,7 +136,8 @@ def clear_text():
 
 # We will get the user's input by calling the get_text function
 def get_text():
-    input_text = st.text_input("Input a question here! For example: \"What are the best Skis for powder?\".", placeholder="Enter prompt: ", key="input")
+    input_text = st.text_input("Input a question here! For example: \"What are the best Skis for powder?\",\
+                                \"Compare Libtech and K2 snowboards.\"", placeholder="Enter prompt: ", key="input")
     return input_text
 
 user_input = get_text()
