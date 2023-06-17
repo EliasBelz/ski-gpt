@@ -48,9 +48,9 @@ def randomize_array(arr):
         arr.remove(elem)
     return sampled_arr
 
-st.set_page_config(page_title="Ski-GPT", page_icon="🎿", layout="wide")
+st.set_page_config(page_title="Ski-GPT", page_icon="🎿", layout="wide", initial_sidebar_state="expanded")
 
-st.header("🎿Ski-GPT is like chatGPT for personalized ski and snowboard recomendations!\n")
+st.header("🎿Ski-GPT is like chatGPT for personalized ski and snowboard recommendations!\n")
 
 # Define the name of the index and the dimensionality of the embeddings
 index_name = "shred-data"
