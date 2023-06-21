@@ -9,7 +9,7 @@ ebelz@cs.washington.edu
 
 ebelzberg@evo.com
 
-### This tech project uses:
+### Tech this project uses:
 
 - OpenAI gpt3.5 turbo LLM
 - Pinecone vector database

@@ -114,7 +114,7 @@ with st.sidebar:
     st.markdown("ebelz@cs.washington.edu")
     st.markdown("ebelzberg@evo.com")
     st.markdown("---")
-    st.markdown("This tech project uses:\n"
+    st.markdown("Tech this project uses:\n"
                 "- OpenAI gpt3.5 turbo LLM\n"
                 "- Pinecone vector database\n"
                 "- Langchain python library\n"
