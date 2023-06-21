@@ -50,3 +50,8 @@ Embeds csv file data and uploads it to Pinecone
 
 ### weaviate-csv-upload.py
 Embeds csv file data and uploads it to Weaviate
+
+## How to run locally
+- Create `.env` file and enter OPENAI_API_KEY and PINECONE_API_KEY
+- Create Pinecone database and run tools to load data.
+- In command line `streamlit run <file.py>`
