@@ -1,7 +1,7 @@
-langchain==0.0.201
-openai==0.27.2
+langchain==0.0.251
+openai==0.27.8
 pinecone_client==2.2.1
-streamlit==1.22.0
-streamlit_chat==0.0.2.2
+streamlit==1.25.0
+streamlit_chat==0.1.1
 weaviate_client==3.19.1
 python-dotenv==1.0.0
