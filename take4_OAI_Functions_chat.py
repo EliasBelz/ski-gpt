@@ -4,7 +4,12 @@ import pinecone
 from streamlit_chat import message
 import random
 import os
+import json
 from dotenv import load_dotenv
+
+# TODO: COntext window
+
+DEBUG = True
 
 #=====================================================#
 #                      API SETUP                      #
@@ -14,6 +19,7 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')  # Replace with your api key
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
 PINECONE_API_ENV = "us-west4-gcp-free"
+MAX_CONTEXT = 5;
 model_name = 'text-embedding-ada-002'
 
 if(not (OPENAI_API_KEY and PINECONE_API_ENV)):
@@ -34,13 +40,14 @@ index = pinecone.Index(index_name)
 
 openai.api_key = OPENAI_API_KEY
 
-def prodSearch(query):
+# Product Search using Pinecone vector db
+def prod_search(query):
     # Embed question
     xq = openai.Embedding.create(input=query, engine=model_name)['data'][0]['embedding']
-    res = index.query([xq], top_k=5, include_metadata=True)
+    res = index.query([xq], top_k=3, include_metadata=True)
     products = ""
     for match in res['matches']:
-        products+=(f"Match: {match['score']:.2f}: {match['metadata']['text']}")
+        products+=(f"{match['metadata']['text']}")
     return products
 
 
@@ -61,21 +68,88 @@ if "avatars" not in st.session_state:
 # Chat history for openai
 if "messages" not in st.session_state:
     st.session_state.messages = []
-    st.session_state.messages.append({"role": "system", "content": "You are a friendly chatbot with the personality of a rad ski shop employee that works at evo Seattle!"})
+    st.session_state.messages.append(
+        {
+            "role": "system",
+            "content":
+                "You are a helpful ai acting as a ski shop employee with the personality of a rad snowboarder that works at evo Seattle!\
+                Your job is to help recommend skis and snowboards! You have access to a product database and can use it asnwer user questions,\
+                Always try to include a recommended product in the reponse.\
+                If you don't know what to recommend, give a genral overview or ask for more details, don't try to make up an answer.\
+                Always include the url of any product meantioned."
+        }
+    )
 
+functions = [
+        {
+            "name": "prod_search",
+            "description": "Use this function to get background information on skis and snowboards from evo. Use this function whenever talking about skis or snowboards/",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Nautral language query to search skis and snowboards. You should rephrase the question to get unique results.",
+                    },
+                },
+                "required": ["query"],
+            },
+        }
+    ]
+func_responses = []
 def chat():
     user_input = st.session_state.input
-    print(prodSearch(user_input))
     st.session_state.input = ""
     st.session_state.messages.append({"role": "user", "content": user_input})
+
     completion = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
-    messages=st.session_state.messages
+    functions=functions,
+    messages=st.session_state.messages,
+    temperature=0.8
     )
+
     output = completion.choices[0].message
+    if DEBUG : print(output)
+    # check if GPT wanted to call a function
+    if output.get("function_call"):
+         # call the function
+        # Note: the JSON response may not always be valid; be sure to handle errors
+        available_functions = {
+            "prod_search": prod_search,
+        }  # only one function in this example, but you can have multiple
+        function_name = output["function_call"]["name"]
+        fuction_to_call = available_functions[function_name]
+        function_args = json.loads(output["function_call"]["arguments"])
+        function_response = fuction_to_call(
+            query=function_args.get("query"),
+        )
+
+        # send the info on the function call and function response to GPT
+        st.session_state.messages.append(output)  # extend conversation with assistant's reply
+        res = {
+                "role": "function",
+                "name": function_name,
+                "content": function_response,
+            }
+        del st.session_state.messages[-1] # delete the return of the function from chat history to conserve tokens
+        st.session_state.messages.append(res)  # extend conversation with function response
+        second_completion = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo-0613",
+            messages=st.session_state.messages,
+            temperature=0.2
+        )
+        output = second_completion.choices[0].message
+        if DEBUG : print(output)
+
+    if len(st.session_state.messages) > MAX_CONTEXT - 1:
+        del st.session_state.messages[1]
     st.session_state.messages.append(output)
     st.session_state.generated.append(output.content)
     st.session_state.past.append(user_input)
+    if output.get("function_call"):
+        st.session_state.generated.append(f'Searching for: {output["function_call"]["arguments"]}')
+        st.session_state.past.append("")
 
 
 #=====================================================#
@@ -100,8 +174,8 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("Tech this project uses:\n"
                 "- OpenAI gpt3.5 turbo LLM\n"
+                "- OpenAI function calling\n"
                 "- Pinecone vector database\n"
-                "- Langchain python library\n"
                 "- Streamlit")
     st.markdown("---")
 
@@ -112,5 +186,6 @@ input_text = st.text_input("Input a question here! For example: \"What are the b
 
 if st.session_state['generated']:
     for i in range(len(st.session_state['generated'])-1, -1, -1):
-        message(st.session_state['past'][i], is_user=True, avatar_style="adventurer",seed=st.session_state.avatars["bot"], key=str(i) + '_user')
+        if st.session_state['past'][i] != "":
+            message(st.session_state['past'][i], is_user=True, avatar_style="adventurer",seed=st.session_state.avatars["bot"], key=str(i) + '_user')
         message(st.session_state["generated"][i],seed=st.session_state.avatars["user"] , key=str(i))
