@@ -7,9 +7,7 @@ import os
 import json
 from dotenv import load_dotenv
 
-# TODO: COntext window
-
-DEBUG = True
+DEBUG = False
 
 #=====================================================#
 #                      API SETUP                      #
@@ -19,7 +17,7 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')  # Replace with your api key
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
 PINECONE_API_ENV = "us-west4-gcp-free"
-MAX_CONTEXT = 5;
+MAX_CONTEXT = 5 # conversational memory window. First index is system call
 model_name = 'text-embedding-ada-002'
 
 if(not (OPENAI_API_KEY and PINECONE_API_ENV)):
@@ -34,7 +32,7 @@ pinecone.init(
 
 # Define the name of the index and the dimensionality of the embeddings
 index_name = "shred-data"
-dimension = 1536
+dimension = 1536 # opeanAI default
 
 index = pinecone.Index(index_name)
 
@@ -56,11 +54,15 @@ def prod_search(query):
 #=====================================================#
 
 # Storing the chat
+# Intro chat generated, but hardcoded for load time
 if 'generated' not in st.session_state:
-    st.session_state['generated'] = []
+    st.session_state['generated'] = [
+        "Hey there! I'm an AI working as a ski shop employee at evo Seattle. I'm here to help you find the perfect skis or snowboard for your next adventure on the slopes!\
+        Just let me know what you're looking for, and I'll do my best to recommend some awesome gear for you. 🏂⛷️"
+        ]
 
 if 'past' not in st.session_state:
-    st.session_state['past'] = []
+    st.session_state['past'] = ["What's up?! What do you do?"]
 
 if "avatars" not in st.session_state:
     st.session_state.avatars = {"user": random.randint(0,100), "bot": random.randint(0,100)}
@@ -72,11 +74,11 @@ if "messages" not in st.session_state:
         {
             "role": "system",
             "content":
-                "You are a helpful ai acting as a ski shop employee with the personality of a rad snowboarder that works at evo Seattle!\
+                "You are a helpful ai acting as a ski shop employee with the personality of a cool snowboarder that works at evo Seattle!\
                 Your job is to help recommend skis and snowboards! You have access to a product database and can use it asnwer user questions,\
-                Always try to include a recommended product in the reponse.\
-                If you don't know what to recommend, give a genral overview or ask for more details, don't try to make up an answer.\
-                Always include the url of any product meantioned."
+                Always try to product recommendations in the reponse! and only recommend gear from prod_search function.\
+                If you don't know what to recommend, give a genral overview or ask for more details from the user, don't try to make up an answer.\
+                Make responses fun, add emojis to make things exciting, and always include product links next to recommendations."
         }
     )
 
@@ -97,8 +99,9 @@ functions = [
         }
     ]
 func_responses = []
-def chat():
-    user_input = st.session_state.input
+def chat(user_input=""):
+    if user_input == "":
+        user_input = st.session_state.input
     st.session_state.input = ""
     st.session_state.messages.append({"role": "user", "content": user_input})
 
@@ -106,14 +109,15 @@ def chat():
     model="gpt-3.5-turbo",
     functions=functions,
     messages=st.session_state.messages,
-    temperature=0.8
+    temperature=0.2
     )
 
     output = completion.choices[0].message
     if DEBUG : print(output)
+    query = ""
     # check if GPT wanted to call a function
     if output.get("function_call"):
-         # call the function
+        # call the function
         # Note: the JSON response may not always be valid; be sure to handle errors
         available_functions = {
             "prod_search": prod_search,
@@ -121,8 +125,9 @@ def chat():
         function_name = output["function_call"]["name"]
         fuction_to_call = available_functions[function_name]
         function_args = json.loads(output["function_call"]["arguments"])
+        query = function_args.get("query")
         function_response = fuction_to_call(
-            query=function_args.get("query"),
+            query=query,
         )
 
         # send the info on the function call and function response to GPT
@@ -137,19 +142,24 @@ def chat():
         second_completion = openai.ChatCompletion.create(
             model="gpt-3.5-turbo-0613",
             messages=st.session_state.messages,
-            temperature=0.2
+            temperature=0.8
         )
         output = second_completion.choices[0].message
         if DEBUG : print(output)
-
+    # remove chats from context window
     if len(st.session_state.messages) > MAX_CONTEXT - 1:
+        # keeps system call at index 0
         del st.session_state.messages[1]
+    # add to GPT state
     st.session_state.messages.append(output)
+    # front end bot state
     st.session_state.generated.append(output.content)
+    # product search message
+    if query != "":
+            st.session_state.generated.append(f'Searching for: {query}')
+            st.session_state.past.append("")
+    # front end user state
     st.session_state.past.append(user_input)
-    if output.get("function_call"):
-        st.session_state.generated.append(f'Searching for: {output["function_call"]["arguments"]}')
-        st.session_state.past.append("")
 
 
 #=====================================================#
@@ -164,7 +174,7 @@ with st.sidebar:
     st.markdown("# About 🙌")
     st.markdown("Ski-GPT is your personal shred curator! 🤟")
     st.markdown("With knowledge of 400 skis and snowboards from evo.com, Ski-GPT will find the right gear for you!")
-    st.markdown("Unlike chatGPT, Ski-GPT will only answer using injected knowlege from evo.com.")
+    st.markdown("Unlike chatGPT, Ski-GPT will answer using injected knowlege from evo.com.")
     st.markdown("---")
     st.markdown("A side project by Elias Belzberg")
     st.markdown("ebelz@cs.washington.edu")
@@ -179,9 +189,9 @@ with st.sidebar:
                 "- Streamlit")
     st.markdown("---")
 
-# We will get the user's input by calling the get_text function
+# We will get the user's input by calling the chat function
 input_text = st.text_input("Input a question here! For example: \"What are the best Skis for powder?\", \
-                                \"Compare the Season Nexus and Forma snowboards.\"",
+                                \"Compare the Season Nexus and Forma.\"",
                                 placeholder="Enter prompt: ", key="input", on_change=chat)
 
 if st.session_state['generated']:

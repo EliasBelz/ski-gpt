@@ -17,7 +17,7 @@ ebelzberg@evo.com
 - Streamlit
 
 ## How it works
-Ski-GPT uses langchain and pinecone to inject product knowledge into openai's 3.5 turbo model.
+Ski-GPT uses pinecone vector db to inject product knowledge into openai's 3.5 turbo model.
 
 Example of injected knowldge for "Powder skis"
 ![Ski knowledge](/img/context.png)
@@ -36,9 +36,12 @@ Example of agent logic for "best Libtech snowboard?":
 ![Ski knowledge](/img/agent.png)
 
 ### Take3
+Uses Pinecone and langchain but no chat agent. This is a simpler more limited approach, but on average has the best results.
+
+### Take4
 /!\ Currently hosted on ski-gpt.streamlit.app /!\\
 
-Uses Pinecone and langchain but no chat agent. This is a simpler more limited approach, but on average has the best results.
+Uses Pinecone and OpenAI function calling for tool use. Also added conversational memory.
 ## Tools:
 Tools for embedding data and uploading to vector databases.
 
