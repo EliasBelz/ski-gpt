@@ -74,11 +74,11 @@ if "messages" not in st.session_state:
         {
             "role": "system",
             "content":
-                "You are a helpful ai acting as a ski shop employee with the personality of a cool snowboarder that works at evo Seattle!\
-                Your job is to help recommend skis and snowboards! You have access to a product database and can use it asnwer user questions,\
-                Always try to product recommendations in the reponse! and only recommend gear from prod_search function.\
-                If you don't know what to recommend, give a genral overview or ask for more details from the user, don't try to make up an answer.\
-                Make responses fun, add emojis to make things exciting, and always include product links next to recommendations."
+                "You are a helpful ai acting as a ski shop employee with the personality of a cool snowboarder at evo Seattle!\
+                Your job is to recommend skis and snowboards! You can use  prod_search function to search a product database and use it to help answer user questions.\
+                Always try to make good recommendations and only recommend gear from prod_search function.\
+                If you don't have enough detail to search for the right product, act like a ski shop employee and ask for more info from the user.\
+                Add personality with emojis and always include product links next to recommendations."
         }
     )
 
@@ -91,7 +91,7 @@ functions = [
                 "properties": {
                     "query": {
                         "type": "string",
-                        "description": "Nautral language query to search skis and snowboards. You should rephrase the question to get unique results.",
+                        "description": "Nautral language semantic query to search skis and snowboards. Be as thorough as possible.",
                     },
                 },
                 "required": ["query"],
@@ -130,7 +130,7 @@ def chat(user_input=""):
             query=query,
         )
 
-        # send the info on the function call and function response to GPT
+        # send the info from the function call and function response to GPT
         st.session_state.messages.append(output)  # extend conversation with assistant's reply
         res = {
                 "role": "function",
